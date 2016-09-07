@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2016 Antonio Espinosa <antonio.espinosa@tecnativa.com>
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+
+<openerp>
+<data>
+
+<record model="ir.ui.view" id="view_mail_mass_mailing_form">
+    <field name="name">Add pending emails to be sent</field>
+    <field name="model">mail.mass_mailing</field>
+    <field name="inherit_id" ref="mass_mailing.view_mail_mass_mailing_form"/>
+    <field name="arch" type="xml">
+        <xpath expr="div[@class='oe_form_box_info oe_text_center']" position="attributes">
+            <attribute name="attrs">{'invisible': [('scheduled', '=', 0), ('pending', '=', 0)]}</attribute>
+        </xpath>
+        <field name="scheduled" position="before">
+            <field name="pending" class="oe_inline"/>
+            recipients pending for creating email.<br/>
+        </field>
+    </field>
+</record>
+
+</data>
+</openerp>
