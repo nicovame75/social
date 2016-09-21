@@ -10,15 +10,49 @@
     <field name="model">mail.mass_mailing</field>
     <field name="inherit_id" ref="mass_mailing.view_mail_mass_mailing_form"/>
     <field name="arch" type="xml">
-        <xpath expr="div[@class='oe_form_box_info oe_text_center']" position="attributes">
-            <attribute name="attrs">{'invisible': [('scheduled', '=', 0), ('pending', '=', 0)]}</attribute>
+        <xpath expr="//button[@name='send_mail'][1]" position="attributes">
+            <attribute name="attrs">{'invisible': ['|', ('state', 'in', ('done', 'sending')), ('body_html', '=', False)]}</attribute>
+            <attribute name="context">{'sending_queue_enabled': True}</attribute>
         </xpath>
-        <field name="scheduled" position="before">
-            <field name="pending" class="oe_inline"/>
-            recipients pending for creating email.<br/>
+        <xpath expr="//button[@name='send_mail'][2]" position="attributes">
+            <attribute name="context">{'sending_queue_enabled': True}</attribute>
+        </xpath>
+        <xpath expr="div[@class='oe_form_box_info oe_text_center']" position="attributes">
+            <attribute name="attrs">{'invisible': [('pending', '=', 0)]}</attribute>
+        </xpath>
+        <field name="scheduled" position="attributes">
+            <attribute name="invisible">1</attribute>
         </field>
+        <field name="scheduled" position="after">
+            <field name="pending" class="oe_inline"/>
+        </field>
+        <notebook position="inside">
+            <page string="Sending tasks">
+                <field name="mass_mailing_sending_ids" nolabel="1">
+                    <tree string="Sending tasks">
+                        <field name="date_start"/>
+                        <field name="state"/>
+                        <field name="pending"/>
+                        <field name="sending"/>
+                        <field name="sent"/>
+                        <field name="failed"/>
+                    </tree>
+                </field>
+            </page>
+        </notebook>
     </field>
 </record>
+
+<!--record model="ir.ui.view" id="view_mail_mass_mailing_kanban">
+    <field name="name">Show Sending state</field>
+    <field name="model">mail.mass_mailing</field>
+    <field name="inherit_id" ref="mass_mailing.view_mail_mass_mailing_kanban"/>
+    <field name="arch" type="xml">
+        <kanban position="attributes">
+            <attribute name="default_group_by">state2</attribute>
+        </kanban>
+    </field>
+</record-->
 
 </data>
 </openerp>

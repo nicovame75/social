@@ -11,6 +11,7 @@
     <field name="arch" type="xml">
         <tree string="Mass mailing sendings">
             <field name="mass_mailing_id"/>
+            <field name="date_start"/>
             <field name="state"/>
             <field name="pending"/>
             <field name="sending"/>
@@ -29,6 +30,8 @@
                 <group>
                     <field name="mass_mailing_id"/>
                     <field name="state"/>
+                    <field name="date_start"/>
+                    <field name="date_end"/>
                 </group>
                 <group>
                     <field name="pending"/>
@@ -36,6 +39,9 @@
                     <field name="sent"/>
                     <field name="failed"/>
                 </group>
+            </group>
+            <group attrs="{'invisible': [('error', '=', False)]}">
+                <field name="error"/>
             </group>
         </form>
     </field>

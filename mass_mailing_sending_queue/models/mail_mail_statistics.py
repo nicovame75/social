@@ -15,7 +15,6 @@ class MailMailStatistics(models.Model):
     @api.model
     def create(self, vals):
         res = super(MailMailStatistics, self).create(vals)
-        sending_id = self.env.context.get('mass_mailing_sending_id', False)
-        if sending_id:
-            res.mass_mailing_sending_id = sending_id
+        res.mass_mailing_sending_id = \
+            self.env.context.get('mass_mailing_sending_id', False)
         return res

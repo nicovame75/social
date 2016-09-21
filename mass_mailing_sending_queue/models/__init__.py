@@ -5,3 +5,4 @@
 from . import mail_mail_statistics
 from . import mail_mass_mailing
 from . import mail_mass_mailing_sending
+from . import mail_mail
