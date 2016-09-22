@@ -7,6 +7,8 @@ from openerp import api, fields, models, tools
 
 _logger = logging.getLogger(__name__)
 
+BATCH_SIZE_DEFAULT = 500
+
 
 class MailMassMailingSending(models.Model):
     _name = 'mail.mass_mailing.sending'
@@ -20,26 +22,23 @@ class MailMassMailingSending(models.Model):
     ], string="State", required=True, copy=False, default='enqueued')
     mass_mailing_id = fields.Many2one(
         string="Mass mailing", comodel_name='mail.mass_mailing', readonly=True)
-    pending = fields.Integer(
-        string="Recipients pending", compute='_compute_pending')
-    sending = fields.Integer(
-        string="Emails sending", compute='_compute_sending')
-    sent = fields.Integer(
-        string="Emails sent", compute='_compute_sent')
-    failed = fields.Integer(
-        string="Emails failed", compute='_compute_failed')
+    pending_count = fields.Integer(
+        string="Pending recipients", compute='_compute_pending_count')
+    sending_count = fields.Integer(
+        string="Mails to be sent", compute='_compute_sending_count')
+    sent_count = fields.Integer(
+        string="Sent mails", compute='_compute_sent_count')
+    failed_count = fields.Integer(
+        string="Failed mails", compute='_compute_failed_count')
     error = fields.Char(string="Error message")
     date_start = fields.Datetime(
         string="Date start", default=fields.Datetime.now())
     date_end = fields.Datetime(string="Date end")
 
-    def _batch_size_default(self):
-        return 500
-
     @api.model
     def batch_size_get(self):
         m_param = self.env['ir.config_parameter']
-        batch_size = self._batch_size_default()
+        batch_size = BATCH_SIZE_DEFAULT
         batch_size_str = m_param.get_param(
             'mail.mass_mailing.sending.batch_size')
         if batch_size_str and batch_size_str.isdigit():
@@ -48,9 +47,8 @@ class MailMassMailingSending(models.Model):
 
     @api.multi
     def pending_emails(self):
-        self.ensure_one()
         return self.env['mail.mail.statistics'].search([
-            ('mass_mailing_sending_id', '=', self.id),
+            ('mass_mailing_sending_id', 'in', self.ids),
             ('scheduled', '!=', False),
             ('sent', '=', False),
             ('exception', '=', False),
@@ -58,14 +56,15 @@ class MailMassMailingSending(models.Model):
 
     @api.multi
     def get_recipient_batch(self, res_ids):
-        self.ensure_one()
         batch_size = self.batch_size_get()
         already_enqueued = self.env['mail.mail.statistics'].search([
-            ('mass_mailing_sending_id', '=', self.id),
+            ('mass_mailing_sending_id', 'in', self.ids),
         ])
         set_ids = set(res_ids)
         new_ids = list(
-            set_ids - set(already_enqueued.mapped('res_id')))[:batch_size]
+            set_ids - set(already_enqueued.mapped('res_id')))
+        if not self.env.context.get('sending_avoid_batch', False):
+            new_ids = new_ids[:batch_size]
         if set(new_ids) != set_ids:
             return new_ids
         return res_ids
@@ -74,7 +73,7 @@ class MailMassMailingSending(models.Model):
     def pending_recipients(self):
         self.ensure_one()
         m_mailing = self.env['mail.mass_mailing'].with_context(
-            mass_mailing_sending_id=self.id)
+            mass_mailing_sending_id=self.id, sending_avoid_batch=True)
         return m_mailing.get_recipients(self.mass_mailing_id)
 
     @api.multi
@@ -138,19 +137,19 @@ class MailMassMailingSending(models.Model):
         return True
 
     @api.multi
-    def _compute_pending(self):
+    def _compute_pending_count(self):
         for sending in self:
-            sending.pending = 0
+            sending.pending_count = 0
             if sending.state == 'enqueued':
-                sending.pending = len(sending.pending_recipients())
+                sending.pending_count = len(sending.pending_recipients())
 
     @api.multi
-    def _compute_sending(self):
+    def _compute_sending_count(self):
         m_stats = self.env['mail.mail.statistics']
         for sending in self:
-            sending.sending = 0
+            sending.sending_count = 0
             if sending.state in {'enqueued', 'sending'}:
-                sending.sending = m_stats.search_count([
+                sending.sending_count = m_stats.search_count([
                     ('mass_mailing_sending_id', '=', sending.id),
                     ('scheduled', '!=', False),
                     ('sent', '=', False),
@@ -158,10 +157,10 @@ class MailMassMailingSending(models.Model):
                 ])
 
     @api.multi
-    def _compute_sent(self):
+    def _compute_sent_count(self):
         m_stats = self.env['mail.mail.statistics']
         for sending in self:
-            sending.sent = m_stats.search_count([
+            sending.sent_count = m_stats.search_count([
                 ('mass_mailing_sending_id', '=', sending.id),
                 ('scheduled', '!=', False),
                 ('sent', '!=', False),
@@ -169,10 +168,10 @@ class MailMassMailingSending(models.Model):
             ])
 
     @api.multi
-    def _compute_failed(self):
+    def _compute_failed_count(self):
         m_stats = self.env['mail.mail.statistics']
         for sending in self:
-            sending.failed = m_stats.search_count([
+            sending.failed_count = m_stats.search_count([
                 ('mass_mailing_sending_id', '=', sending.id),
                 ('scheduled', '!=', False),
                 ('exception', '!=', False),

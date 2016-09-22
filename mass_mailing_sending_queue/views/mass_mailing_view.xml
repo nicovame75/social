@@ -15,16 +15,17 @@
             <attribute name="context">{'sending_queue_enabled': True}</attribute>
         </xpath>
         <xpath expr="//button[@name='send_mail'][2]" position="attributes">
+            <attribute name="attrs">{'invisible': ['|', ('state', 'not in', ('done', )), ('body_html', '=', False)]}</attribute>
             <attribute name="context">{'sending_queue_enabled': True}</attribute>
         </xpath>
         <xpath expr="div[@class='oe_form_box_info oe_text_center']" position="attributes">
-            <attribute name="attrs">{'invisible': [('pending', '=', 0)]}</attribute>
+            <attribute name="attrs">{'invisible': [('pending_count', '=', 0)]}</attribute>
         </xpath>
         <field name="scheduled" position="attributes">
             <attribute name="invisible">1</attribute>
         </field>
         <field name="scheduled" position="after">
-            <field name="pending" class="oe_inline"/>
+            <field name="pending_count" class="oe_inline"/>
         </field>
         <notebook position="inside">
             <page string="Sending tasks">
@@ -32,27 +33,16 @@
                     <tree string="Sending tasks">
                         <field name="date_start"/>
                         <field name="state"/>
-                        <field name="pending"/>
-                        <field name="sending"/>
-                        <field name="sent"/>
-                        <field name="failed"/>
+                        <field name="pending_count"/>
+                        <field name="sending_count"/>
+                        <field name="sent_count"/>
+                        <field name="failed_count"/>
                     </tree>
                 </field>
             </page>
         </notebook>
     </field>
 </record>
-
-<!--record model="ir.ui.view" id="view_mail_mass_mailing_kanban">
-    <field name="name">Show Sending state</field>
-    <field name="model">mail.mass_mailing</field>
-    <field name="inherit_id" ref="mass_mailing.view_mail_mass_mailing_kanban"/>
-    <field name="arch" type="xml">
-        <kanban position="attributes">
-            <attribute name="default_group_by">state2</attribute>
-        </kanban>
-    </field>
-</record-->
 
 </data>
 </openerp>

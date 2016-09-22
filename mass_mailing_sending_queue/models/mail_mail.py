@@ -14,8 +14,7 @@ class MailMail(models.Model):
         stats = mail.statistics_ids
         res = super(MailMail, self)._postprocess_sent_message(
             cr, uid, mail, context=context, mail_sent=mail_sent)
-        if stats:
-            for stat in stats:
-                if stat.mass_mailing_sending_id.state == 'sending':
-                    stat.mass_mailing_sending_id._process_sending()
+        for stat in stats.filtered(
+                lambda r: r.mass_mailing_sending_id.state == 'sending'):
+            stat.mass_mailing_sending_id._process_sending()
         return res

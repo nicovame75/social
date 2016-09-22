@@ -28,7 +28,7 @@ msgstr "Creado en"
 #. module: mass_mailing_sending_queue
 #: field:mail.mass_mailing.sending,display_name:0
 msgid "Display Name"
-msgstr "Nombre a mostrar"
+msgstr "Nombre mostrado"
 
 #. module: mass_mailing_sending_queue
 #: model:ir.model,name:mass_mailing_sending_queue.model_mail_mail_statistics
@@ -38,7 +38,7 @@ msgstr "Estadísticas de correo electrónico"
 #. module: mass_mailing_sending_queue
 #: field:mail.mass_mailing.sending,failed:0
 msgid "Emails failed"
-msgstr "Emails fallidos"
+msgstr "Correos electrónicos fallidos"
 
 #. module: mass_mailing_sending_queue
 #: field:mail.mass_mailing.sending,sending:0
@@ -153,4 +153,4 @@ msgstr "destinatarios pendientes de crear el correo electrónico."
 #. module: mass_mailing_sending_queue
 #: view:mail.mass_mailing:mass_mailing_sending_queue.view_mail_mass_mailing_form
 msgid "{'invisible': [('scheduled', '=', 0), ('pending', '=', 0)]}"
-msgstr ""
+msgstr "{'invisible': [('scheduled', '=', 0), ('pending', '=', 0)]}"

@@ -5,7 +5,7 @@
     "name": "Mass mailing sending queue",
     "summary": "A new queue for sending mass mailing",
     "version": "8.0.1.0.0",
-    "category": "Social Network",
+    "category": "Marketing",
     "website": "https://odoo-community.org/",
     "author": "Tecnativa, Odoo Community Association (OCA)",
     "license": "AGPL-3",
