@@ -138,23 +138,20 @@ class MailMassMailingSending(models.Model):
 
     @api.multi
     def _compute_pending_count(self):
-        for sending in self:
-            sending.pending_count = 0
-            if sending.state == 'enqueued':
-                sending.pending_count = len(sending.pending_recipients())
+        for sending in self.filtered(lambda r: r.state == 'enqueued'):
+            sending.pending_count = len(sending.pending_recipients())
 
     @api.multi
     def _compute_sending_count(self):
         m_stats = self.env['mail.mail.statistics']
-        for sending in self:
-            sending.sending_count = 0
-            if sending.state in {'enqueued', 'sending'}:
-                sending.sending_count = m_stats.search_count([
-                    ('mass_mailing_sending_id', '=', sending.id),
-                    ('scheduled', '!=', False),
-                    ('sent', '=', False),
-                    ('exception', '=', False),
-                ])
+        for sending in self.filtered(
+                lambda r: r.state in {'enqueued', 'sending'}):
+            sending.sending_count = m_stats.search_count([
+                ('mass_mailing_sending_id', '=', sending.id),
+                ('scheduled', '!=', False),
+                ('sent', '=', False),
+                ('exception', '=', False),
+            ])
 
     @api.multi
     def _compute_sent_count(self):
