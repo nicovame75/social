@@ -2,7 +2,6 @@
 # Copyright 2016 Antonio Espinosa <antonio.espinosa@tecnativa.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from copy import deepcopy
 from openerp import api, fields, models, _
 from openerp.exceptions import Warning as UserError
 
