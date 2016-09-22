@@ -5,7 +5,6 @@
 from copy import deepcopy
 from openerp import api, fields, models, _
 from openerp.exceptions import Warning as UserError
-import logging
 
 
 class MailMassMailing(models.Model):
@@ -20,15 +19,15 @@ class MailMassMailing(models.Model):
         comodel_name='mail.mass_mailing.sending', readonly=True,
         inverse_name='mass_mailing_id', string="Sending tasks")
 
-    def read_group(self, cr, uid, domain, fields, groupby, **kwargs):
+    @api.model
+    def read_group(self, domain, fields, groupby, **kwargs):
         # Add 'sending' state group, even if no results.
         # This is needed for kanban view, columns are showed always
         res = super(MailMassMailing, self).read_group(
-            cr, uid, domain, fields, groupby, **kwargs)
+            domain, fields, groupby, **kwargs)
         if groupby and groupby[0] == "state":
             group_domain = domain + [('state', '=', 'sending')]
-            count = self.search_count(
-                cr, uid, group_domain, context=kwargs.get('context', {}))
+            count = self.search_count(group_domain)
             res.append({
                 '__context': {'group_by': groupby[1:]},
                 '__domain': group_domain,

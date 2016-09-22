@@ -117,6 +117,48 @@ class TestMassMailingSending(TransactionCase):
         self.assertEqual(0, sending.failed_count)
         self.assertEqual('done', self.mass_mailing.state)
 
+    def test_cron_partners(self):
+        self.mass_mailing_short.with_context(
+            sending_queue_enabled=True).send_mail()
+        sendings = self.env['mail.mass_mailing.sending'].search([
+            ('mass_mailing_id', '=', self.mass_mailing_short.id),
+        ])
+        stats = self.env['mail.mail.statistics'].search([
+            ('mass_mailing_id', '=', self.mass_mailing_short.id),
+        ])
+        # Sending in 'draft' state and 1 email stats created
+        self.assertEqual(1, len(sendings))
+        self.assertEqual(1, len(stats))
+        sending = sendings[0]
+        self.assertEqual('sending', sending.state)
+        self.assertEqual(0, sending.pending_count)
+        self.assertEqual('sending', self.mass_mailing_short.state)
+        self.assertEqual(1, self.mass_mailing_short.pending_count)
+        for stat in stats:
+            if stat.mail_mail_id:
+                stat.mail_mail_id.send()
+        self.env.invalidate_all()
+        # Check that 1 email are already sent
+        self.assertEqual('sent', sending.state)
+        self.assertEqual(0, sending.sending_count)
+        self.assertEqual(1, sending.sent_count)
+        self.assertEqual(0, sending.failed_count)
+        self.assertEqual('done', self.mass_mailing_short.state)
+
+    def test_concurrent(self):
+        self.mass_mailing.with_context(sending_queue_enabled=True).send_mail()
+        with self.assertRaises(UserError):
+            self.mass_mailing.with_context(
+                sending_queue_enabled=True).send_mail()
+
+    def test_read_group(self):
+        groups = self.env['mail.mass_mailing'].read_group(
+            [('sent_date', '<', '1900-12-31')], ['state', 'name'], ['state'])
+        self.assertTrue([
+            x for x in groups if (
+                x['state_count'] == 0 and x['state'][0] == 'sending')
+        ])
+
     def test_no_recipients(self):
         empty_list = self.env['mail.mass_mailing.list'].create({
             'name': 'Test list with no recipients',
