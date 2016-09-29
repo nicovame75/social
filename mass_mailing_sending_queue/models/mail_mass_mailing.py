@@ -78,8 +78,13 @@ class MailMassMailing(models.Model):
 
     @api.model
     def get_recipients(self, mailing):
-        res_ids = super(MailMassMailing, self).get_recipients(mailing)
         sending_id = self.env.context.get('mass_mailing_sending_id', False)
+        try:
+            res_ids = super(MailMassMailing, self).get_recipients(mailing)
+        except UserError:
+            if not sending_id:
+                raise
+            res_ids = []
         if sending_id:
             sending = self.env['mail.mass_mailing.sending'].browse(sending_id)
             res_ids = sending.get_recipient_batch(res_ids)
