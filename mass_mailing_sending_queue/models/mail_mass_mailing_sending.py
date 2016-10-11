@@ -100,7 +100,7 @@ class MailMassMailingSending(models.Model):
         if not self.pending_recipients():
             self.state = 'sending'
             self._process_sending()
-        else:
+        elif self.mass_mailing_id.state != 'sending':
             self.mass_mailing_id.state = 'sending'
 
     def _process_sending(self):
@@ -109,7 +109,7 @@ class MailMassMailingSending(models.Model):
             self.mass_mailing_id.state = 'done'
             self.state = 'sent'
             self.date_end = fields.Datetime.now()
-        else:
+        elif self.mass_mailing_id.state != 'sending':
             self.mass_mailing_id.state = 'sending'
 
     def _process(self):
