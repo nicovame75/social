@@ -21,6 +21,14 @@ you need to add ``mail_tracking`` addon to wide load addons list
 For example, ``--load=web,mail_tracking``
 
 
+Configuration
+=============
+
+In some special cases, it is neccesarry to define a custom base_url for
+mail tracking 1-pixel image. You can define a system parameter
+'mail_tracking.base.url', by default, fallbacks to 'web.base.url'
+
+
 Usage
 =====
 
